@@ -20,6 +20,11 @@ const CatProfileView = Backbone.View.extend({
     </div>
   `),
 
+  initialize() {
+    this.model.fetch();
+    this.listenTo(this.model, 'sync', this.render);
+  },
+
   render() {
     this.$el.html(this.template({ cat: this.model }));
     return this;

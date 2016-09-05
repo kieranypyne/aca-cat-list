@@ -7,10 +7,7 @@ const CatsCollection = require('./collections/CatsCollection');
 window.$ = window.jQuery = $;
 
 const app = document.querySelector('#app');
-const cats = new CatsCollection();
-const listView = new CatsListView({ collection: cats });
-
-cats.fetch();
+const listView = new CatsListView({ collection: new CatsCollection() });
 
 app.appendChild(listView.render().el);
 
@@ -65,6 +62,7 @@ const CatsListView = Backbone.View.extend({
   el: '<ul class="cat-list"></ul>',
 
   initialize() {
+    this.collection.fetch();
     this.listenTo(this.collection, 'update', this.render);
   },
 

@@ -6,9 +6,6 @@ const CatsCollection = require('./collections/CatsCollection');
 window.$ = window.jQuery = $;
 
 const app = document.querySelector('#app');
-const cats = new CatsCollection();
-const listView = new CatsListView({ collection: cats });
-
-cats.fetch();
+const listView = new CatsListView({ collection: new CatsCollection() });
 
 app.appendChild(listView.render().el);

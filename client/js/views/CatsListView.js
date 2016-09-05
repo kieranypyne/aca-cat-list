@@ -5,6 +5,7 @@ const CatsListView = Backbone.View.extend({
   el: '<ul class="cat-list"></ul>',
 
   initialize() {
+    this.collection.fetch();
     this.listenTo(this.collection, 'update', this.render);
   },
 
