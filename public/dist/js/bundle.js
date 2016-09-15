@@ -1,17 +1,15 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 const $ = require('jquery');
-const CatsListView = require('./views/CatsListView');
-const CatsCollection = require('./collections/CatsCollection');
+const Backbone = require('backbone');
+const Router = require('./router');
 
 // Set jQuery in the window
 window.$ = window.jQuery = $;
 
-const app = document.querySelector('#app');
-const listView = new CatsListView({ collection: new CatsCollection() });
+const router = new Router();
+Backbone.history.start();
 
-app.appendChild(listView.render().el);
-
-},{"./collections/CatsCollection":2,"./views/CatsListView":5,"jquery":7}],2:[function(require,module,exports){
+},{"./router":4,"backbone":8,"jquery":9}],2:[function(require,module,exports){
 const Backbone = require('backbone');
 const CatModel = require('../models/CatModel');
 
@@ -22,7 +20,7 @@ const CatsCollection = Backbone.Collection.extend({
 
 module.exports = CatsCollection;
 
-},{"../models/CatModel":3,"backbone":6}],3:[function(require,module,exports){
+},{"../models/CatModel":3,"backbone":8}],3:[function(require,module,exports){
 const Backbone = require('backbone');
 
 const CatModel = Backbone.Model.extend({
@@ -32,7 +30,50 @@ const CatModel = Backbone.Model.extend({
 
 module.exports = CatModel;
 
-},{"backbone":6}],4:[function(require,module,exports){
+},{"backbone":8}],4:[function(require,module,exports){
+const Backbone = require('backbone');
+const CatsCollection = require('./collections/CatsCollection');
+const CatsListView = require('./views/CatsListView');
+const CatModel = require('./models/CatModel');
+const CatProfileView = require('./views/CatProfileView');
+
+let currentView;
+
+const Router = Backbone.Router.extend({
+  routes: {
+    '/': 'cats',
+    'cats/:id': 'cat',
+    '*cats': 'cats'
+  },
+
+  cats() {
+    const view = new CatsListView({ collection: new CatsCollection() });
+    setView(view);
+  },
+
+  cat(id) {
+    const cat = new CatModel({ _id: id });
+    const view = new CatProfileView({ model: cat });
+    setView(view);
+  }
+
+});
+
+function setView(view) {
+  if (currentView) {
+    currentView.remove();
+  }
+
+  currentView = view;
+
+  const app = document.querySelector('#app');
+  app.innerHTML = '';
+  app.appendChild(view.render().el);
+}
+
+module.exports = Router;
+
+},{"./collections/CatsCollection":2,"./models/CatModel":3,"./views/CatProfileView":6,"./views/CatsListView":7,"backbone":8}],5:[function(require,module,exports){
 const _ = require('lodash');
 const Backbone = require('backbone');
 
@@ -40,7 +81,9 @@ const CatItemView = Backbone.View.extend({
   el: '<li></li>',
 
   template: _.template(`
-    <img src="<%= cat.get('image') %>" alt="Profile Pic" />
+    <a href="#cats/<%= cat.get('_id') %>">
+      <img src="<%= cat.get('image') %>" alt="Profile Pic" />
+    </a>
     <div>
       <span> <%= cat.get('name') %> </span>
     </div>
@@ -54,7 +97,43 @@ const CatItemView = Backbone.View.extend({
 
 module.exports = CatItemView;
 
-},{"backbone":6,"lodash":8}],5:[function(require,module,exports){
+},{"backbone":8,"lodash":10}],6:[function(require,module,exports){
+const _ = require('lodash');
+const Backbone = require('backbone');
+
+const CatProfileView = Backbone.View.extend({
+  el: '<div class="profile"></div>',
+
+  template: _.template(`
+    <img src="<%= cat.get('image') %>" alt="Profile Pic" />
+    <div>
+      <label>Name:</label>
+      <span> <%= cat.get('name') %> </span>
+    </div>
+    <div>
+      <label>Hobbies:</label>
+      <span> <%= cat.get('hobbies') %> </span>
+    </div>
+    <div>
+      <label>Bio:</label>
+      <p> <%= cat.get('bio') %> </p>
+    </div>
+  `),
+
+  initialize() {
+    this.model.fetch();
+    this.listenTo(this.model, 'sync', this.render);
+  },
+
+  render() {
+    this.$el.html(this.template({ cat: this.model }));
+    return this;
+  }
+});
+
+module.exports = CatProfileView;
+
+},{"backbone":8,"lodash":10}],7:[function(require,module,exports){
 const Backbone = require('backbone');
 const CatItemView = require('./CatItemView');
 
@@ -80,7 +159,7 @@ const CatsListView = Backbone.View.extend({
 
 module.exports = CatsListView;
 
-},{"./CatItemView":4,"backbone":6}],6:[function(require,module,exports){
+},{"./CatItemView":5,"backbone":8}],8:[function(require,module,exports){
 (function (global){
 //     Backbone.js 1.3.3
 
@@ -2005,7 +2084,7 @@ module.exports = CatsListView;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"jquery":7,"underscore":9}],7:[function(require,module,exports){
+},{"jquery":9,"underscore":11}],9:[function(require,module,exports){
 /*eslint-disable no-unused-vars*/
 /*!
  * jQuery JavaScript Library v3.1.0
@@ -12081,7 +12160,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -28819,7 +28898,7 @@ return jQuery;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
